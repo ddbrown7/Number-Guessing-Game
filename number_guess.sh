@@ -16,8 +16,7 @@ if [[ -z $USER_ID ]]; then
   echo "Welcome, $USERNAME! It looks like this is your first time here."
 else
   # Returning user
-  GAMES_PLAYED=$($PSQL "SELECT COUNT(*) FROM games WHERE user_id=$USER_ID;")
-  BEST_GAME=$($PSQL "SELECT MIN(guesses) FROM games WHERE user_id=$USER_ID;")
+  IFS='|' read -r GAMES_PLAYED BEST_GAME <<< "$($PSQL "SELECT COUNT(*), COALESCE(MIN(guesses), 0) FROM games WHERE user_id=$USER_ID;")"
   echo "Welcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
 fi
 
@@ -49,4 +48,3 @@ done
 $PSQL "INSERT INTO games(user_id, guesses) VALUES($USER_ID, $GUESSES);" > /dev/null
 
 echo "You guessed it in $GUESSES tries. The secret number was $SECRET. Nice job!"
-
